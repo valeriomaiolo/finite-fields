@@ -1,0 +1,4 @@
+Install Node.js, then run serve to start a local server in the project's directory:
+npx serve .
+
+If everything went well, you'll see a URL like http://localhost:3000 appear in your terminal, and can open that URL to see your web application.
