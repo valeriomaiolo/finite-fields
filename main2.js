@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { BoxLineGeometry } from 'three/addons/geometries/BoxLineGeometry.js';
-import { VRButton } from 'three/addons/webxr/VRButton.js';
-import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+//import { BoxLineGeometry } from '/three/addons/geometries/BoxLineGeometry.js';
+//import { VRButton } from '/three/addons/webxr/VRButton.js';
+//import { XRControllerModelFactory } from '/three/addons/webxr/XRControllerModelFactory.js';
 import { tuningGen } from './tuningGen.1.js';
 
 let camera, listener, scene, raycaster, renderer, controls, pointer, CLICKED;
