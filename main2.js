@@ -25,7 +25,7 @@ let oscillator = new Array(SpheresPerEdge);
 let panner = new Array(SpheresPerEdge);
 let gainNode = [];
 let intonation = new Array(SpheresPerEdge);
-let mixer, mixer1,mixer2,mixer3,mixer4,mixer5,mixer6,mixer7, mixer8;
+let mixer, mixer1,mixer2,mixer3,mixer4,mixer5,mixer6,mixer7, mixerOpacity;
 let ball = new Array(SpheresPerEdge);;
 let audioCtx;
 let ArpOn, switch_arp = 0, bpm=300, steps=5, pattern='Ascending', arp_f0, arp_index=1, count = 0, temp = 0;
@@ -134,14 +134,20 @@ function initScene(){
 }
 
 function fundGlow(){
-	t = 50000 * (1/f0);
+	t = 1000 * (1/f0);
 	// create some keyframe tracks
 	const roughness = new THREE.KeyframeTrack( '.material.roughness', [ 0, 1*t, 2*t], [ 0, 1, 0] );
 	const colorKF = new THREE.ColorKeyframeTrack( '.material.emissiveIntensity', [ 0, 1*t, 2*t ], [ 0, 1, 0]);
 
-	const clip = new THREE.AnimationClip( 'default', 2*t, [colorKF, roughness]);
-	mixer = new THREE.AnimationMixer( ball[0][0][0] );
+	const opacityFund = new THREE.KeyframeTrack( '.material.opacity', [ 0, 1*t, 2*t], [ 0, 1, 0] );
 
+
+	const clip = new THREE.AnimationClip( 'default', 2*t, [colorKF, roughness]);
+	const clipOpacity = new THREE.AnimationClip( 'default', 2*t, [opacityFund]);
+
+	mixerOpacity = new THREE.AnimationMixer( ball[0][0][0] );
+
+	mixer = new THREE.AnimationMixer( ball[0][0][0] );
 	mixer1 = new THREE.AnimationMixer( ball[0][0][1] );
 	mixer2 = new THREE.AnimationMixer( ball[0][1][0] );
 	mixer3 = new THREE.AnimationMixer( ball[1][0][0] );
@@ -149,10 +155,12 @@ function fundGlow(){
 	mixer5 = new THREE.AnimationMixer( ball[1][1][0] );
 	mixer6 = new THREE.AnimationMixer( ball[1][1][1] );
 	mixer7 = new THREE.AnimationMixer( ball[0][1][1] );
-	mixer8 = new THREE.AnimationMixer( ball);
 
 
 	//mixLattice = new THREE.AnimationMixer( Lattice );
+
+	const clipActionOpacity = mixer.clipAction( clipOpacity );
+	clipActionOpacity.play();
 
 	const clipAction = mixer.clipAction( clip );
 	clipAction.play();
@@ -301,7 +309,7 @@ function initSoundLattice(){
 
 				sound[i][j][k] = new THREE.PositionalAudio( listener );
 				sound[i][j][k].setNodeSource(oscillator[i][j][k]);
-				sound[i][j][k].gain.gain.linearRampToValueAtTime(0.6, audioCtx.currentTime);
+				sound[i][j][k].gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime);
 				sound[i][j][k].setRefDistance( 20 );
 
 				//oscillator[i][j][k].start(audioCtx.currentTime);
@@ -353,6 +361,7 @@ function initSoundLattice(){
 function Routine(){
 
 	let lfo = audioCtx.createOscillator();
+	oscillator[0][0][0].type = 'triangle';
 	  
 	lfo.type = 'sine';
 	lfo.frequency.setValueAtTime(0.01, audioCtx.currentTime);
@@ -377,7 +386,7 @@ function Routine(){
 	//lfo.start(audioCtx.currentTime);
 	//oscillator[0][0][0].start(audioCtx.currentTime);
 
-	sound[0][0][0].gain.gain.exponentialRampToValueAtTime(1, audioCtx.currentTime);
+	sound[0][0][0].gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime);
 
 	//sound[0][0][0].gain.gain.exponentialRampToValueAtTime(0.3, audioCtx.currentTime);
 	//lfo.gain.exponentialRampToValueAtTime(1.0, audioCtx.currentTime+15);
@@ -441,6 +450,10 @@ function animate() {
 function render() {
 	const delta = clock.getDelta();
 
+	if ( mixerOpacity ) {
+		mixerOpacity.update( delta );
+	}
+
 	if ( mixer ) {
 		mixer.update( delta );
 	}
@@ -474,9 +487,9 @@ function render() {
 	}
 
 
-	Lattice.rotation.y += 0.001;
-    Lattice.rotation.x += 0.001;
-    Lattice.rotation.z += 0.001;
+	Lattice.rotation.y += 0.0001;
+    Lattice.rotation.x += 0.0001;
+    Lattice.rotation.z += 0.0001;
  
 	renderer.render(scene, camera );
 }
