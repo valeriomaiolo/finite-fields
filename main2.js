@@ -18,7 +18,7 @@ let camera, listener, scene, raycaster, renderer, controls, pointer, CLICKED;
 let light1, room, floor;
 let clock = new THREE.Clock();
 let spherePosition, radius = 4;
-let BallDistance = 30; // Distance between two balls
+let BallDistance = 25; // Distance between two balls
 let SpheresPerEdge = 2; // per Edge
 let Lattice = new THREE.Group();
 let oscillator = new Array(SpheresPerEdge);
@@ -69,7 +69,7 @@ function initScene(){
 */
 	// CAMERA
     camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight);
-    camera.position.set( -8.5, 7 , 1);
+    camera.position.set( -8.5, 15 , 1);
     camera.add(listener);
 
     // LIGHT
@@ -128,13 +128,13 @@ function initScene(){
 	var system = new THREE.Group();
 	scene.add(system);
 	system.add(Lattice);
-	system.position.set(0,0,-60);
+	system.position.set(0,10,-60);
 
 	window.addEventListener('resize', onWindowResize, false );
 }
 
 function fundGlow(){
-	t = 300 * (1/f0);
+	t = 50000 * (1/f0);
 	// create some keyframe tracks
 	const roughness = new THREE.KeyframeTrack( '.material.roughness', [ 0, 1*t, 2*t], [ 0, 1, 0] );
 	const colorKF = new THREE.ColorKeyframeTrack( '.material.emissiveIntensity', [ 0, 1*t, 2*t ], [ 0, 1, 0]);
@@ -142,7 +142,7 @@ function fundGlow(){
 	const clip = new THREE.AnimationClip( 'default', 2*t, [colorKF, roughness]);
 	mixer = new THREE.AnimationMixer( ball[0][0][0] );
 
-	/*mixer1 = new THREE.AnimationMixer( ball[0][0][1] );
+	mixer1 = new THREE.AnimationMixer( ball[0][0][1] );
 	mixer2 = new THREE.AnimationMixer( ball[0][1][0] );
 	mixer3 = new THREE.AnimationMixer( ball[1][0][0] );
 	mixer4 = new THREE.AnimationMixer( ball[1][0][1] );
@@ -151,13 +151,13 @@ function fundGlow(){
 	mixer7 = new THREE.AnimationMixer( ball[0][1][1] );
 	mixer8 = new THREE.AnimationMixer( ball);
 
-*/
+
 	//mixLattice = new THREE.AnimationMixer( Lattice );
 
 	const clipAction = mixer.clipAction( clip );
 	clipAction.play();
 
-/*
+
 	const clipAction1 = mixer1.clipAction( clip );
 	clipAction1.play();
 
@@ -179,9 +179,6 @@ function fundGlow(){
 	const clipAction7 = mixer7.clipAction( clip );
 	clipAction7.play();
 
-	const clipAction8 = mixer8.clipAction( clip );
-	clipAction7.play();
-	*/
 }
 
 function defBallMatrix(){
@@ -358,7 +355,7 @@ function Routine(){
 	let lfo = audioCtx.createOscillator();
 	  
 	lfo.type = 'sine';
-	lfo.frequency.setValueAtTime(0.1, audioCtx.currentTime);
+	lfo.frequency.setValueAtTime(0.01, audioCtx.currentTime);
 
 	lfo.connect(sound[0][0][0].gain.gain);
 
