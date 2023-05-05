@@ -139,13 +139,13 @@ function fundGlow(){
 	const roughness = new THREE.KeyframeTrack( '.material.roughness', [ 0, 1*t, 2*t], [ 0, 1, 0] );
 	const colorKF = new THREE.ColorKeyframeTrack( '.material.emissiveIntensity', [ 0, 1*t, 2*t ], [ 0, 1, 0]);
 
-	const opacityFund = new THREE.KeyframeTrack( '.material.opacity', [ 0, 1*t, 2*t], [ 0, 1, 0] );
+	//const opacityFund = new THREE.KeyframeTrack( '.material.opacity', [ 0, 0.5*t, 1*t], [ 0, 1, 0] );
 
 
 	const clip = new THREE.AnimationClip( 'default', 2*t, [colorKF, roughness]);
-	const clipOpacity = new THREE.AnimationClip( 'default', 2*t, [opacityFund]);
+	//const clipOpacity = new THREE.AnimationClip( 'default', 2*t, [opacityFund]);
 
-	mixerOpacity = new THREE.AnimationMixer( ball[0][0][0] );
+	//mixerOpacity = new THREE.AnimationMixer( ball[0][0][0] );
 
 	mixer = new THREE.AnimationMixer( ball[0][0][0] );
 	mixer1 = new THREE.AnimationMixer( ball[0][0][1] );
@@ -159,8 +159,8 @@ function fundGlow(){
 
 	//mixLattice = new THREE.AnimationMixer( Lattice );
 
-	const clipActionOpacity = mixer.clipAction( clipOpacity );
-	clipActionOpacity.play();
+	//const clipActionOpacity = mixer.clipAction( clipOpacity );
+	//clipActionOpacity.play();
 
 	const clipAction = mixer.clipAction( clip );
 	clipAction.play();
@@ -364,7 +364,7 @@ function Routine(){
 	oscillator[0][0][0].type = 'triangle';
 	  
 	lfo.type = 'sine';
-	lfo.frequency.setValueAtTime(0.01, audioCtx.currentTime);
+	lfo.frequency.setValueAtTime(0.005, audioCtx.currentTime);
 
 	lfo.connect(sound[0][0][0].gain.gain);
 
@@ -450,9 +450,9 @@ function animate() {
 function render() {
 	const delta = clock.getDelta();
 
-	if ( mixerOpacity ) {
-		mixerOpacity.update( delta );
-	}
+	//if ( mixerOpacity ) {
+	//	mixerOpacity.update( delta );
+	//}
 
 	if ( mixer ) {
 		mixer.update( delta );
@@ -487,9 +487,9 @@ function render() {
 	}
 
 
-	Lattice.rotation.y += 0.0001;
-    Lattice.rotation.x += 0.0001;
-    Lattice.rotation.z += 0.0001;
+	Lattice.rotation.y += 0.00025;
+    Lattice.rotation.x += 0.00025;
+    Lattice.rotation.z += 0.00025;
  
 	renderer.render(scene, camera );
 }
