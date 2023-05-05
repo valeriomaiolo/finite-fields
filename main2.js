@@ -1,9 +1,18 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-//import { BoxLineGeometry } from '/three/addons/geometries/BoxLineGeometry.js';
-//import { VRButton } from '/three/addons/webxr/VRButton.js';
-//import { XRControllerModelFactory } from '/three/addons/webxr/XRControllerModelFactory.js';
+import { BoxLineGeometry } from 'three/addons/geometries/BoxLineGeometry.js';
+//import { VRButton } from 'three/addons/webxr/VRButton.js';
+import { VRButton } from './myVRButton.js';
+import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 import { tuningGen } from './tuningGen.1.js';
+
+// POLYFILL
+// provides support for mobile devices and devices which do not support WebVR (To be removed when WebXR will be widely supported)
+import {QueryArgs} from './query-args.js';
+import WebXRPolyfill from './webxr-polyfill.module.js';
+if (QueryArgs.getBool('usePolyfill', true)) {
+    let polyfill = new WebXRPolyfill();
+}
 
 let camera, listener, scene, raycaster, renderer, controls, pointer, CLICKED;
 let light1, room, floor;
@@ -40,6 +49,7 @@ document.body.appendChild( container );
 
 initScene();
 animate();
+setupVR();
 
 function initScene(){
 
@@ -50,11 +60,16 @@ function initScene(){
     // LISTENER
     listener = new THREE.AudioListener();
 	audioCtx = listener.context;
-
+/*
     // CAMERA
     camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight);
     camera.lookAt(new THREE.Vector3(0,0,0));
     camera.position.set( 0,  -60 , 0);
+    camera.add(listener);
+*/
+	// CAMERA
+    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight);
+    camera.position.set( -8.5, 7 , 1);
     camera.add(listener);
 
     // LIGHT
@@ -113,7 +128,7 @@ function initScene(){
 	var system = new THREE.Group();
 	scene.add(system);
 	system.add(Lattice);
-	system.position.set(0,0,-6);
+	system.position.set(0,0,-60);
 
 	window.addEventListener('resize', onWindowResize, false );
 }
@@ -405,6 +420,13 @@ function SoundVisualPatching(){
 	for(var i = 0; i<Math.pow(SpheresPerEdge,3); i++){
 		Lattice.children[i].add(soundTempinRaw[i]);
 	}
+}
+
+function setupVR(){
+    renderer.xr.enabled = true;
+
+    // VR BUTTON
+    const button = new VRButton( renderer);
 }
 
 function onWindowResize(){
