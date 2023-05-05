@@ -18,7 +18,7 @@ let camera, listener, scene, raycaster, renderer, controls, pointer, CLICKED;
 let light1, room, floor;
 let clock = new THREE.Clock();
 let spherePosition, radius = 4;
-let BallDistance = 25; // Distance between two balls
+let BallDistance = 20; // Distance between two balls
 let SpheresPerEdge = 2; // per Edge
 let Lattice = new THREE.Group();
 let oscillator = new Array(SpheresPerEdge);
@@ -69,7 +69,7 @@ function initScene(){
 */
 	// CAMERA
     camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight);
-    camera.position.set( -8.5, 15 , 1);
+    camera.position.set( -8.5, 5 , 20);
     camera.add(listener);
 
     // LIGHT
@@ -128,13 +128,13 @@ function initScene(){
 	var system = new THREE.Group();
 	scene.add(system);
 	system.add(Lattice);
-	system.position.set(0,10,-60);
+	system.position.set(0,18,-35);
 
 	window.addEventListener('resize', onWindowResize, false );
 }
 
 function fundGlow(){
-	t = 1000 * (1/f0);
+	t = 900 * (1/f0);
 	// create some keyframe tracks
 	const roughness = new THREE.KeyframeTrack( '.material.roughness', [ 0, 1*t, 2*t], [ 0, 1, 0] );
 	const colorKF = new THREE.ColorKeyframeTrack( '.material.emissiveIntensity', [ 0, 1*t, 2*t ], [ 0, 1, 0]);
@@ -487,9 +487,9 @@ function render() {
 	}
 
 
-	Lattice.rotation.y += 0.00025;
-    Lattice.rotation.x += 0.00025;
-    Lattice.rotation.z += 0.00025;
+	Lattice.rotation.y += 0.025;
+    Lattice.rotation.x += 0.025;
+    Lattice.rotation.z += 0.025;
  
 	renderer.render(scene, camera );
 }
