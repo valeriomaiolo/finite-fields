@@ -361,10 +361,10 @@ function initSoundLattice(){
 function Routine(){
 
 	let lfo = audioCtx.createOscillator();
-	oscillator[0][0][0].type = 'triangle';
+	oscillator[0][0][0].type = 'sine';
 	  
 	lfo.type = 'sine';
-	lfo.frequency.setValueAtTime(0.005, audioCtx.currentTime);
+	lfo.frequency.setValueAtTime(0.05, audioCtx.currentTime);
 
 	lfo.connect(sound[0][0][0].gain.gain);
 
@@ -487,9 +487,9 @@ function render() {
 	}
 
 
-	Lattice.rotation.y += 0.025;
-    Lattice.rotation.x += 0.025;
-    Lattice.rotation.z += 0.025;
+	Lattice.rotation.y += 0.00025;
+    Lattice.rotation.x += 0.00025;
+    Lattice.rotation.z += 0.00025;
  
 	renderer.render(scene, camera );
 }
