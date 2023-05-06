@@ -8,12 +8,12 @@ export function tuningGen(SpheresPerEdge, intonation) {
 
     let xAxisInterval = 3; //Fifths default
     let yAxisInterval = 7; //Maj.Thirds default
-    let zAxisInterval = 29; // min.Seventh default
+    let zAxisInterval = 11; // min.Seventh default
 
 
     let Oct = 1;
 
-    let f0 = 200;
+    let f0 = 400;
 
     let ratio = new Array(SpheresPerEdge);
 
@@ -38,7 +38,7 @@ export function tuningGen(SpheresPerEdge, intonation) {
                     ratio[i][j][k] *= Math.pow(2, -1);
                 }
 
-                console.log("E ancora, i = " + i + " j = " + j + " k= " + k + " ratio = " + ratio[i][j][k]);
+                //console.log("E ancora, i = " + i + " j = " + j + " k= " + k + " ratio = " + ratio[i][j][k]);
                 
                 intonation[i][j][k] = (f0 *ratio[i][j][k]);
             }

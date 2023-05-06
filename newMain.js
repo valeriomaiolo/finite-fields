@@ -359,7 +359,67 @@ function initSoundLattice(){
 }
 
 function Routine(){
+/*
+    let modulator = audioCtx.createOscillator();
+    
+    let indexNode = createGain();
 
+    modulator.frequency.setValueAtTime(10, audioCtx.currentTime);
+
+    modulator.connect(indexNode);
+
+    let  = 5;
+
+    indexNode.gain.setValueAtTime(index, audioCtx.currentTime);
+
+    oscillator[0][0][0].frequency.setValueAtTime(intonation[0][0][0] + modulator, audioCtx.currentTime);
+*/
+
+
+    let f_c = intonation[0][0][0];
+    let CarrierFrequency = new ConstantSourceNode(audioCtx, {offset: f_c});
+    let modOsc = audioCtx.createOscillator();
+    let modNode = audioCtx.createGain();
+
+    modOsc.start(audioCtx.currentTime);
+    CarrierFrequency.start(audioCtx.currentTime);
+    //oscillator[0][0][0].start(audioCtx.currentTime);
+
+    modNode.gain.setValueAtTime(100, audioCtx.currentTime )
+    console.log(modNode.gain)
+
+    modOsc.frequency.setValueAtTime(5000, audioCtx.currentTime );
+
+    modNode.connect(oscillator[0][0][0].frequency);
+    CarrierFrequency.connect(oscillator[0][0][0].frequency);
+
+    modOsc.connect(modNode);
+    
+
+
+    
+    setTimeout(() => {
+		for(var i = 0; i< SpheresPerEdge; i++){
+			for(var j = 0; j< SpheresPerEdge; j++){
+				for(var k = 0; k< SpheresPerEdge; k++){
+					oscillator[i][j][k].start(audioCtx.currentTime);}}}
+	}, 100);
+
+
+
+
+    /*
+    let modulator = audioCtx.createOscillator();
+    let index = 5, f_m = 10;
+    modulator.frequency.setValueAtTime(f_m, audioCtx.currentTime );
+    let modNode = createGain();
+    modulator.connect(modNode);
+    modNode.gain.setValueAtTime(index, audioCtx.currentTime);
+    console.log("sono f_c " + f_c);
+
+*/
+
+/*
 	let lfo = audioCtx.createOscillator();
 	oscillator[0][0][0].type = 'sine';
 	  
@@ -370,7 +430,7 @@ function Routine(){
 
 	//sound[0][0][0].connect(lfo);
 
-	//console.log(sound[0][0][0]);
+	console.log(sound[0][0][0]);
 
 	//toglie il glitch all'avvio. ok anche con 0 ms.
 	
@@ -387,6 +447,8 @@ function Routine(){
 	//oscillator[0][0][0].start(audioCtx.currentTime);
 
 	sound[0][0][0].gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime);
+
+    */
 
 	//sound[0][0][0].gain.gain.exponentialRampToValueAtTime(0.3, audioCtx.currentTime);
 	//lfo.gain.exponentialRampToValueAtTime(1.0, audioCtx.currentTime+15);
@@ -487,9 +549,9 @@ function render() {
 	}
 
 
-	Lattice.rotation.y += 0.00025;
-    Lattice.rotation.x += 0.00025;
-    Lattice.rotation.z += 0.00025;
+	Lattice.rotation.y += 0.0005;
+    Lattice.rotation.x += 0.0005;
+    Lattice.rotation.z += 0.0005;
  
 	renderer.render(scene, camera );
 }
