@@ -4,7 +4,7 @@ import { BoxLineGeometry } from 'three/addons/geometries/BoxLineGeometry.js';
 //import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { VRButton } from './myVRButton.js';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
-import { tuningGen } from './tuningGen.1.js';
+import { tuningGen } from './tuningGen1.js';
 
 // POLYFILL
 // provides support for mobile devices and devices which do not support WebVR (To be removed when WebXR will be widely supported)
@@ -18,7 +18,7 @@ let camera, listener, scene, raycaster, renderer, controls, pointer, CLICKED;
 let light1, room, floor;
 let clock = new THREE.Clock();
 let spherePosition, radius = 4;
-let BallDistance = 20; // Distance between two balls
+let BallDistance = 30; // Distance between two balls
 let SpheresPerEdge = 2; // per Edge
 let Lattice = new THREE.Group();
 let oscillator = new Array(SpheresPerEdge);
@@ -128,7 +128,7 @@ function initScene(){
 	var system = new THREE.Group();
 	scene.add(system);
 	system.add(Lattice);
-	system.position.set(0,18,-35);
+	system.position.set(0,10,-45);
 
 	window.addEventListener('resize', onWindowResize, false );
 }
@@ -309,51 +309,19 @@ function initSoundLattice(){
 
 				sound[i][j][k] = new THREE.PositionalAudio( listener );
 				sound[i][j][k].setNodeSource(oscillator[i][j][k]);
-				sound[i][j][k].gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime);
-				sound[i][j][k].setRefDistance( 20 );
+				sound[i][j][k].gain.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime);			
+				sound[i][j][k].setRefDistance( 60 );
+				sound[i][j][k].panner.distanceModel = "exponential";
+				sound[i][j][k].panner.rolloffFactor = 30;
 
-				//oscillator[i][j][k].start(audioCtx.currentTime);
-
-
-				/*
-				coneInnerAngle: 
-				A parameter for directional audio sources, 
-				this is an angle, inside of which there will be no volume reduction. 
-				The default value is 360.
-
-				coneOuterAngle: 
-				A parameter for directional audio sources, 
-				this is an angle, outside of which the volume will be reduced to a constant value of coneOuterGain. 
-				The default value is 360.
-
-				coneOuterGain: 
-				A parameter for directional audio sources, 
-				this is the amount of volume reduction outside of the coneOuterAngle. 
-				The default value is 0.
-				*/
-				
-				let degrees = 360;
-				let radians = (degrees - 90) * (Math.PI / 180);
-  				// using cosine and sine here ensures the output values are always normalized
-  				// i.e. they range between -1 and 1
-  				let x = Math.cos(radians);
-  				let z = Math.sin(radians);
-			
-				panner[i][j][k] = sound[i][j][k].getOutput();
-				panner[i][j][k].distanceModel = "inverse";
-				panner[i][j][k].rolloffFactor = 10;
-		
-				panner[i][j][k].coneInnerAngle = 300;
-				panner[i][j][k].coneOuterAngle = 15;
-				panner[i][j][k].coneOuterGain = 0.3;
-
-				panner[i][j][k].orientationX.setValueAtTime(x, audioCtx.currentTime);
-				//panner[i][j][k].orientationY.setValueAtTime(-90, audioCtx.currentTime);
-				panner[i][j][k].orientationZ.setValueAtTime(z, audioCtx.currentTime);
-				           
+				//panner[i][j][k] = sound[i][j][k].getOutput();
+				//panner[i][j][k].distanceModel = "inverse";
+				//panner[i][j][k].rolloffFactor = 10;
+						           
 			}
 		}
 		
+        
 	}
 
 }

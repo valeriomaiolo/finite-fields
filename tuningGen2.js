@@ -7,13 +7,12 @@ export function tuningGen(SpheresPerEdge, intonation) {
     */
 
     let xAxisInterval = 3; //Fifths default
-    let yAxisInterval = 7; //Maj.Thirds default
-    let zAxisInterval = 11; // min.Seventh default
-
+    let yAxisInterval = 5; //Maj.Thirds default
+    let zAxisInterval = 29; // min.Seventh default
 
     let Oct = 1;
 
-    let f0 = 400;
+    let f0 = 200;
 
     let ratio = new Array(SpheresPerEdge);
 

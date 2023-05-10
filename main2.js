@@ -4,7 +4,7 @@ import { BoxLineGeometry } from 'three/addons/geometries/BoxLineGeometry.js';
 //import { VRButton } from 'three/addons/webxr/VRButton.js';
 import { VRButton } from './myVRButton.js';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
-import { tuningGen } from './tuningGen.1.js';
+import { tuningGen } from './tuningGen2.js';
 
 // POLYFILL
 // provides support for mobile devices and devices which do not support WebVR (To be removed when WebXR will be widely supported)
@@ -18,15 +18,16 @@ let camera, listener, scene, raycaster, renderer, controls, pointer, CLICKED;
 let light1, room, floor;
 let clock = new THREE.Clock();
 let spherePosition, radius = 4;
-let BallDistance = 20; // Distance between two balls
+let BallDistance = 30; // Distance between two balls
 let SpheresPerEdge = 2; // per Edge
 let Lattice = new THREE.Group();
 let oscillator = new Array(SpheresPerEdge);
 let panner = new Array(SpheresPerEdge);
 let gainNode = [];
 let intonation = new Array(SpheresPerEdge);
-let mixer, mixer1,mixer2,mixer3,mixer4,mixer5,mixer6,mixer7, mixerOpacity;
-let ball = new Array(SpheresPerEdge);;
+let mixer = new Array(SpheresPerEdge);
+let clipAction = new Array(SpheresPerEdge);
+let ball = new Array(SpheresPerEdge);
 let audioCtx;
 let ArpOn, switch_arp = 0, bpm=300, steps=5, pattern='Ascending', arp_f0, arp_index=1, count = 0, temp = 0;
 let notes = [arp_f0, arp_f0*Math.pow(2, 4/12), arp_f0*Math.pow(2, 7/12), arp_f0*Math.pow(2, 10/12), arp_f0*Math.pow(2, 13/12), arp_f0*Math.pow(2, 16/12)];
@@ -40,6 +41,10 @@ let yAxisInterval = 4; //Maj.Thirds default
 let zAxisInterval = 10; // min.Seventh default
 let name = "Sphere";
 let sound = [];
+let fc = new Array(SpheresPerEdge);
+let CarrierFrequency = new Array(SpheresPerEdge);
+let modNode = new Array(SpheresPerEdge);
+let modOsc = new Array(SpheresPerEdge);
 
 const targetQuaternion = new THREE.Quaternion();
 const rotationMatrix = new THREE.Matrix4();
@@ -47,9 +52,44 @@ const rotationMatrix = new THREE.Matrix4();
 const container = document.createElement( 'div' );
 document.body.appendChild( container );
 
+initAllTensors();
 initScene();
 animate();
 setupVR();
+
+function initAllTensors(){
+	for (var i = 0; i < SpheresPerEdge; i++) {
+		intonation[i]= new Array(SpheresPerEdge);
+		gainNode[i] = new Array(SpheresPerEdge);
+		oscillator[i] = new Array(SpheresPerEdge);
+		panner[i] = new Array(SpheresPerEdge);
+		sound[i] = new Array(SpheresPerEdge);
+		mixer[i] = new Array(SpheresPerEdge);
+		clipAction[i] = new Array(SpheresPerEdge);
+		ball[i] = new Array(SpheresPerEdge);
+		fc[i] = new Array(SpheresPerEdge);
+		CarrierFrequency[i] = new Array(SpheresPerEdge);
+		modNode[i] = new Array(SpheresPerEdge);
+		modOsc[i]= new Array(SpheresPerEdge);
+	}
+
+	for (var i = 0; i < SpheresPerEdge; i++) {
+		for (var j = 0; j < SpheresPerEdge; j++) {
+			intonation[i][j]= new Array(SpheresPerEdge);
+			gainNode[i][j] = new Array(SpheresPerEdge);
+			oscillator[i][j] = new Array(SpheresPerEdge);
+			panner[i][j] = new Array(SpheresPerEdge);
+			sound[i][j] = new Array(SpheresPerEdge);
+			mixer[i][j] = new Array(SpheresPerEdge);
+			clipAction[i][j] = new Array(SpheresPerEdge);
+			ball[i][j] = new Array(SpheresPerEdge);
+			fc[i][j] = new Array(SpheresPerEdge);
+			CarrierFrequency[i][j] = new Array(SpheresPerEdge);
+			modNode[i][j] = new Array(SpheresPerEdge);
+			modOsc[i][j] = new Array(SpheresPerEdge);
+		}
+	}
+}
 
 function initScene(){
 
@@ -68,8 +108,10 @@ function initScene(){
     camera.add(listener);
 */
 	// CAMERA
-    camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight);
-    camera.position.set( -8.5, 5 , 20);
+    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 10, 10000);
+    //camera.position.set( -8.5, 5 , 20);
+	camera.position.set( 0, 0 , 20);
+
     camera.add(listener);
 
     // LIGHT
@@ -102,13 +144,13 @@ function initScene(){
 
 	initSoundLattice();
 	
-	//Lattice.position.set(-BallDistance/2, -BallDistance/2, -BallDistance/2);
+	//Lattice.position.set(-10-BallDistance/2, -BallDistance/2, -BallDistance/2);
 	
 	// Creation of Lattice "Metadata"
 	Lattice.name = "Lattice"; // per intersect nel raycaster!
 
 	fundGlow();
-	SoundVisualPatching();
+	//SoundVisualPatching();
 	Routine();
 
     // RENDERER
@@ -128,7 +170,8 @@ function initScene(){
 	var system = new THREE.Group();
 	scene.add(system);
 	system.add(Lattice);
-	system.position.set(0,18,-35);
+	system.position.set(0,10,-45);
+	//system.position.set(0,18,-10);
 
 	window.addEventListener('resize', onWindowResize, false );
 }
@@ -147,45 +190,21 @@ function fundGlow(){
 
 	//mixerOpacity = new THREE.AnimationMixer( ball[0][0][0] );
 
-	mixer = new THREE.AnimationMixer( ball[0][0][0] );
-	mixer1 = new THREE.AnimationMixer( ball[0][0][1] );
-	mixer2 = new THREE.AnimationMixer( ball[0][1][0] );
-	mixer3 = new THREE.AnimationMixer( ball[1][0][0] );
-	mixer4 = new THREE.AnimationMixer( ball[1][0][1] );
-	mixer5 = new THREE.AnimationMixer( ball[1][1][0] );
-	mixer6 = new THREE.AnimationMixer( ball[1][1][1] );
-	mixer7 = new THREE.AnimationMixer( ball[0][1][1] );
-
+	for(var i = 0; i<SpheresPerEdge; i++){
+		for(var j = 0; j<SpheresPerEdge; j++){
+			for(var k = 0; k<SpheresPerEdge; k++){
+				mixer[i][j][k] = new THREE.AnimationMixer( ball[i][j][k] );
+				
+				clipAction[i][j][k] = mixer[i][j][k].clipAction( clip );
+				clipAction[i][j][k].play();
+			}
+		}
+	}
 
 	//mixLattice = new THREE.AnimationMixer( Lattice );
 
 	//const clipActionOpacity = mixer.clipAction( clipOpacity );
 	//clipActionOpacity.play();
-
-	const clipAction = mixer.clipAction( clip );
-	clipAction.play();
-
-
-	const clipAction1 = mixer1.clipAction( clip );
-	clipAction1.play();
-
-	const clipAction2 = mixer2.clipAction( clip );
-	clipAction2.play();
-
-	const clipAction3 = mixer3.clipAction( clip );
-	clipAction3.play();
-
-	const clipAction4 = mixer4.clipAction( clip );
-	clipAction4.play();
-
-	const clipAction5 = mixer5.clipAction( clip );
-	clipAction5.play();
-
-	const clipAction6 = mixer6.clipAction( clip );
-	clipAction6.play();
-
-	const clipAction7 = mixer7.clipAction( clip );
-	clipAction7.play();
 
 }
 
@@ -205,7 +224,7 @@ function defBallMatrix(){
 	for(var i = 0; i<SpheresPerEdge; i++){
 		for(var j = 0; j<SpheresPerEdge; j++){
 			for(var k = 0; k<SpheresPerEdge; k++){
-				spherePosition = [i*BallDistance-BallDistance/2-radius/2, j*BallDistance-BallDistance/2-radius/2, k*BallDistance-BallDistance/2-radius/2];
+				spherePosition = [i*BallDistance-(((SpheresPerEdge-1)/2)*BallDistance), j*BallDistance-(((SpheresPerEdge-1)/2)*BallDistance), k*BallDistance-(((SpheresPerEdge-1)/2)*BallDistance)];
 				ball[i][j][k] = Ball();
 				ball[i][j][k].name = name.concat(i, j, k);
 				ball[i][j][k].userData[0] = {MODEL: false, PREVIOUS: false};
@@ -245,26 +264,6 @@ function initLatticeNEW(){
 	scene.add(Lattice);
 }
 
-function defSoundMatrices(){
-	for (var i = 0; i < SpheresPerEdge; i++) {
-		intonation[i]= new Array(SpheresPerEdge);
-		gainNode[i] = new Array(SpheresPerEdge);
-		oscillator[i] = new Array(SpheresPerEdge);
-		panner[i] = new Array(SpheresPerEdge);
-		sound[i] = new Array(SpheresPerEdge);
-	}
-
-	for (var i = 0; i < SpheresPerEdge; i++) {
-		for (var j = 0; j < SpheresPerEdge; j++) {
-			intonation[i][j]= new Array(SpheresPerEdge);
-			gainNode[i][j] = new Array(SpheresPerEdge);
-			oscillator[i][j] = new Array(SpheresPerEdge);
-			panner[i][j] = new Array(SpheresPerEdge);
-			sound[i][j] = new Array(SpheresPerEdge);
-		}
-	}
-}
-
 function initIntonation(){
 	for(var i = 0; i<SpheresPerEdge; i++){
 		for(var j = 0; j<SpheresPerEdge; j++){
@@ -290,8 +289,20 @@ function initOscFreqs(){
 	}
 } 
 
+function yRotationToVector(degrees){
+	// convert degrees to radians and offset the angle so 0 points towards the listener
+	const radians = (degrees - 90) * (Math.PI / 180);
+	// using cosine and sine here ensures the output values are always normalized
+	// i.e. they range between -1 and 1
+	const x = Math.cos(radians);
+	const z = Math.sin(radians);
+  
+	// we hard-code the Y component to 0, as Y is the axis of rotation
+	return [x, 0, z];
+  };
+  
+
 function initSoundLattice(){
-	defSoundMatrices();
 	//initIntonation();
 	tuningGen(SpheresPerEdge, intonation);
     
@@ -308,9 +319,36 @@ function initSoundLattice(){
 				//oscillator[i][j][k].connect(gainNode[i][j][k]);
 
 				sound[i][j][k] = new THREE.PositionalAudio( listener );
+
+
+				//oscillator[i][j][k].connect(sound[i][j][k].gain);
 				sound[i][j][k].setNodeSource(oscillator[i][j][k]);
-				sound[i][j][k].gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime);
-				sound[i][j][k].setRefDistance( 20 );
+
+
+				sound[i][j][k].gain.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime);
+				sound[i][j][k].setRefDistance( 60 );
+				sound[i][j][k].panner.distanceModel = "exponential";
+				sound[i][j][k].panner.rolloffFactor = 30;
+				//sound[i][j][k].setDirectionalCone ( 360, 360, 0 );
+				//sound[i][j][k].setDirectionalCone ( 360, 360, 0 );
+				//panner[i][j][k] = sound[i][j][k].getOutput();		
+
+				/*
+				let x1, y1, z1;
+				let degrees = 180;
+				[x1, y1, z1] = yRotationToVector(degrees);
+				sound[i][j][k].panner.orientationX.value = x1;
+				sound[i][j][k].panner.orientationY.value = y1;
+				sound[i][j][k].panner.orientationZ.value = z1;
+				*/
+				ball[i][j][k].add(sound[i][j][k]); // Molto importante, per incollare l'audio posizionale alle palle
+
+				
+
+				console.log(sound[i][j][k])
+
+				
+
 
 				//oscillator[i][j][k].start(audioCtx.currentTime);
 
@@ -331,6 +369,8 @@ function initSoundLattice(){
 				this is the amount of volume reduction outside of the coneOuterAngle. 
 				The default value is 0.
 				*/
+
+				/*
 				
 				let degrees = 360;
 				let radians = (degrees - 90) * (Math.PI / 180);
@@ -343,13 +383,15 @@ function initSoundLattice(){
 				panner[i][j][k].distanceModel = "inverse";
 				panner[i][j][k].rolloffFactor = 10;
 		
-				panner[i][j][k].coneInnerAngle = 300;
-				panner[i][j][k].coneOuterAngle = 15;
-				panner[i][j][k].coneOuterGain = 0.3;
+				panner[i][j][k].coneInnerAngle = 30;
+				panner[i][j][k].coneOuterAngle = 50;
+				panner[i][j][k].coneOuterGain = 0;
 
-				panner[i][j][k].orientationX.setValueAtTime(x, audioCtx.currentTime);
-				//panner[i][j][k].orientationY.setValueAtTime(-90, audioCtx.currentTime);
-				panner[i][j][k].orientationZ.setValueAtTime(z, audioCtx.currentTime);
+				//panner[i][j][k].orientationX.setValueAtTime(-90, audioCtx.currentTime);
+				panner[i][j][k].orientationY.setValueAtTime(90, audioCtx.currentTime);
+				panner[i][j][k].orientationZ.setValueAtTime(50, audioCtx.currentTime);
+
+				*/
 				           
 			}
 		}
@@ -360,57 +402,37 @@ function initSoundLattice(){
 
 function Routine(){
 
-	let lfo = audioCtx.createOscillator();
-	oscillator[0][0][0].type = 'sine';
-	  
-	lfo.type = 'sine';
-	lfo.frequency.setValueAtTime(0.05, audioCtx.currentTime);
-
-	lfo.connect(sound[0][0][0].gain.gain);
-
-	//sound[0][0][0].connect(lfo);
-
-	//console.log(sound[0][0][0]);
-
-	//toglie il glitch all'avvio. ok anche con 0 ms.
 	
-	setTimeout(() => {
+
+	for(var i = 0; i< SpheresPerEdge; i++){
+		for(var j = 0; j< SpheresPerEdge; j++){
+			for(var k = 0; k< SpheresPerEdge; k++){
+				fc[i][j][k] = intonation[i][j][k];
+				CarrierFrequency[i][j][k] = new ConstantSourceNode(audioCtx, {offset: fc[i][j][k]});
+				modNode[i][j][k] = audioCtx.createGain();
+				modOsc[i][j][k] = audioCtx.createOscillator();
+				modNode[i][j][k].connect(oscillator[i][j][k].frequency);
+				CarrierFrequency[i][j][k].connect(oscillator[i][j][k].frequency);
+				modOsc[i][j][k].connect(modNode[i][j][k]);
+				modOsc[i][j][k].start(audioCtx.currentTime);
+				modNode[i][j][k].gain.setValueAtTime(500, audioCtx.currentTime);
+				modOsc[i][j][k].frequency.setValueAtTime(500, audioCtx.currentTime );
+			}
+		}
+	}
+
+	
+
+    setTimeout(() => {
 		for(var i = 0; i< SpheresPerEdge; i++){
 			for(var j = 0; j< SpheresPerEdge; j++){
 				for(var k = 0; k< SpheresPerEdge; k++){
+					CarrierFrequency[i][j][k].start(audioCtx.currentTime);
 					oscillator[i][j][k].start(audioCtx.currentTime);}}}
 	}, 100);
-	
-	lfo.start(audioCtx.currentTime);
-
-	//lfo.start(audioCtx.currentTime);
-	//oscillator[0][0][0].start(audioCtx.currentTime);
-
-	sound[0][0][0].gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime);
-
-	//sound[0][0][0].gain.gain.exponentialRampToValueAtTime(0.3, audioCtx.currentTime);
-	//lfo.gain.exponentialRampToValueAtTime(1.0, audioCtx.currentTime+15);
-
-	/*
-	let envLoop;
-	envLoop = setInterval(
-	myArpeggiator, audioCtx.currentTime+32000);
-	*/
-
-	//let ms = 1000*60/bpm;
-
-	function myArpeggiator() {
-		sound[0][0][0].gain.gain.exponentialRampToValueAtTime(1.0, audioCtx.currentTime+15);
-		//sound[0][0][0].gain.gain.setValueAtTime(0.0,audioCtx.currentTime +2);
-		sound[0][0][0].gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime+15);
-	}
-		
-	//sound[0][0][0].setVolume(1.0);
-
-	//sound[0][0][0].gain.gain.setTargetAtTime(0.0, audioCtx.currentTime, 5);
-
 }
 
+	
 function SoundVisualPatching(){
 
 	let soundTempinRaw = new Array();
@@ -454,42 +476,19 @@ function render() {
 	//	mixerOpacity.update( delta );
 	//}
 
-	if ( mixer ) {
-		mixer.update( delta );
+	for(var i = 0; i<SpheresPerEdge; i++){
+		for(var j = 0; j<SpheresPerEdge; j++){
+			for(var k = 0; k<SpheresPerEdge; k++){
+				if ( mixer[i][j][k] ) {
+					mixer[i][j][k].update( delta );
+				}
+			}
+		}
 	}
 
-	if ( mixer1 ) {
-		mixer1.update( delta );
-	}
-
-	if ( mixer2 ) {
-		mixer2.update( delta );
-	}
-
-	if ( mixer3 ) {
-		mixer3.update( delta );
-	}
-
-	if ( mixer4 ) {
-		mixer4.update( delta );
-	}
-
-	if ( mixer5 ) {
-		mixer5.update( delta );
-	}
-
-	if ( mixer6 ) {
-		mixer6.update( delta );
-	}
-
-	if ( mixer7 ) {
-		mixer7.update( delta );
-	}
-
-
-	Lattice.rotation.y += 0.00025;
-    Lattice.rotation.x += 0.00025;
-    Lattice.rotation.z += 0.00025;
+	Lattice.rotation.y += 0.00045;
+    Lattice.rotation.x += 0.00035;
+    Lattice.rotation.z += 0.00035;
  
 	renderer.render(scene, camera );
 }
